@@ -8,10 +8,10 @@ describe("descendants", () => {
   });
 
   test("renders items in order", async () => {
-    const items = await screen.findAllByText(/Children/i, { selector: "span" });
+    const items = await screen.findAllByTestId("item-span");
     items.forEach((item) => {
       expect(item).toHaveTextContent(
-        `Children ${item.parentElement?.getAttribute("data-index")}`
+        item.parentElement?.getAttribute("data-index")!
       );
     });
   });
@@ -21,24 +21,11 @@ describe("descendants", () => {
     async () => {
       const button = await screen.findByTestId("button");
       fireEvent.click(button);
-      const items = await screen.findAllByText(/Children/i, {
-        selector: "span",
-      });
+      const items = await screen.findAllByTestId("item-span");
 
       items.forEach((item) => {
-        // if (
-        //   item.textContent?.includes(
-        //     item.parentElement?.getAttribute("data-index")
-        //   ) === false
-        // ) {
-        //   console.log(
-        //     item.textContent,
-        //     item.parentElement?.getAttribute("data-index")
-        //   );
-        //   screen.debug();
-        // }
         expect(item).toHaveTextContent(
-          item.parentElement!.getAttribute("data-index")!
+          item.parentElement?.getAttribute("data-index")!
         );
       });
     }
