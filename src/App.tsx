@@ -41,7 +41,7 @@ export default function App() {
   // the custom app registers items correctly, except on the first render
 
   return (
-    <CustomApp
+    <ReachApp
       items={items}
       onClickShuffle={handleClickShuffle}
       countItems={countItems}

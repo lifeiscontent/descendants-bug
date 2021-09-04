@@ -5,15 +5,13 @@ import {
   useDescendantsInit,
   useDescendant,
 } from "@reach/descendants";
-import { MouseEventHandler, PropsWithChildren, useRef } from "react";
-
-interface TestDescendant extends Descendant {}
+import { MouseEventHandler, PropsWithChildren, useCallback, useMemo, useRef, useState } from "react";
 
 const DescendantContext =
-  createDescendantContext<TestDescendant>("DescendantContext");
+  createDescendantContext<Descendant>("DescendantContext");
 
 function Container(props: PropsWithChildren<unknown>) {
-  const [descendants, setDescendants] = useDescendantsInit<TestDescendant>();
+  const [descendants, setDescendants] = useDescendantsInit<Descendant>();
   return (
     <DescendantProvider
       context={DescendantContext}
@@ -25,11 +23,28 @@ function Container(props: PropsWithChildren<unknown>) {
   );
 }
 
+export function useStatefulRefValue<V>(
+  ref: React.RefObject<V>,
+  initialState: V
+): [V, (refValue: Exclude<V, null>) => void] {
+  let [state, setState] = useState(initialState);
+  let callbackRef = useCallback((refValue: Exclude<V, null>) => {
+    (ref as React.MutableRefObject<V>).current = refValue;
+    setState(refValue);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  return [state, callbackRef];
+}
+
 function Item(props: PropsWithChildren<unknown>) {
   const ref = useRef<HTMLDivElement | null>(null);
-  const index = useDescendant({ element: ref.current }, DescendantContext);
+  let [element, handleRefSet] = useStatefulRefValue(ref, null);
+  const descendant: Omit<Descendant<HTMLDivElement>, "index"> = useMemo(() => {
+    return { element }
+  }, [element]);
+  const index = useDescendant(descendant, DescendantContext);
   return (
-    <div data-index={index} ref={ref}>
+    <div data-index={index} ref={handleRefSet}>
       {props.children}
     </div>
   );
